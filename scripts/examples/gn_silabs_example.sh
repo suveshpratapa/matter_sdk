@@ -103,6 +103,10 @@ if [ "$#" == "0" ]; then
             Enable Synchronized Sleepy end device. (Default false)
             Must also set chip_enable_icd_server=true chip_openthread_ftd=false
             --icd can be used to configure both arguments
+        enable_wed
+            Enable Wake-up End Device for Thread in Mobile. (Default false)
+            Must also set chip_enable_icd_server=true chip_openthread_ftd=false
+            --icd can be used to configure both arguments
         use_SiWx917
             Build wifi example with extension board SiWx917. (Default false)
         use_wf200
@@ -328,7 +332,7 @@ else
         {
             ShortCommitSha=$(git describe --always --dirty --exclude '*')
             branchName=$(git rev-parse --abbrev-ref HEAD)
-            optArgs+="sl_matter_version_str=\"v1.3-$branchName-$ShortCommitSha\" "
+            optArgs+="sl_matter_version_str=\"v1.4-$branchName-$ShortCommitSha\" "
         } &>/dev/null
     fi
 
