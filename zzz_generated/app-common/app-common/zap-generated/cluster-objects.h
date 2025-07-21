@@ -367,20 +367,18 @@ namespace Globals {
 // Global structs.
 namespace Structs {
 
-namespace TestGlobalStruct {
+namespace AtomicAttributeStatusStruct {
 enum class Fields : uint8_t
 {
-    kName     = 0,
-    kMyBitmap = 1,
-    kMyEnum   = 2,
+    kAttributeID = 0,
+    kStatusCode  = 1,
 };
 
 struct Type
 {
 public:
-    chip::CharSpan name;
-    DataModel::Nullable<chip::BitMask<Globals::TestGlobalBitmap>> myBitmap;
-    Optional<DataModel::Nullable<Globals::TestGlobalEnum>> myEnum;
+    chip::AttributeId attributeID = static_cast<chip::AttributeId>(0);
+    uint8_t statusCode            = static_cast<uint8_t>(0);
 
     CHIP_ERROR Decode(TLV::TLVReader & reader);
 
@@ -391,7 +389,7 @@ public:
 
 using DecodableType = Type;
 
-} // namespace TestGlobalStruct
+} // namespace AtomicAttributeStatusStruct
 
 namespace LocationDescriptorStruct {
 enum class Fields : uint8_t
@@ -419,18 +417,20 @@ using DecodableType = Type;
 
 } // namespace LocationDescriptorStruct
 
-namespace AtomicAttributeStatusStruct {
+namespace TestGlobalStruct {
 enum class Fields : uint8_t
 {
-    kAttributeID = 0,
-    kStatusCode  = 1,
+    kName     = 0,
+    kMyBitmap = 1,
+    kMyEnum   = 2,
 };
 
 struct Type
 {
 public:
-    chip::AttributeId attributeID = static_cast<chip::AttributeId>(0);
-    uint8_t statusCode            = static_cast<uint8_t>(0);
+    chip::CharSpan name;
+    DataModel::Nullable<chip::BitMask<Globals::TestGlobalBitmap>> myBitmap;
+    Optional<DataModel::Nullable<Globals::TestGlobalEnum>> myEnum;
 
     CHIP_ERROR Decode(TLV::TLVReader & reader);
 
@@ -441,7 +441,7 @@ public:
 
 using DecodableType = Type;
 
-} // namespace AtomicAttributeStatusStruct
+} // namespace TestGlobalStruct
 
 } // namespace Structs
 
@@ -42298,6 +42298,78 @@ public:
 } // namespace CommissioningRequestResult
 } // namespace Events
 } // namespace CommissionerControl
+namespace AppleDeviceInformation {
+
+namespace Attributes {
+
+namespace SupportsWED {
+struct TypeInfo
+{
+    using Type             = bool;
+    using DecodableType    = bool;
+    using DecodableArgType = bool;
+
+    static constexpr ClusterId GetClusterId() { return Clusters::AppleDeviceInformation::Id; }
+    static constexpr AttributeId GetAttributeId() { return Attributes::SupportsWED::Id; }
+    static constexpr bool MustUseTimedWrite() { return false; }
+};
+} // namespace SupportsWED
+namespace GeneratedCommandList {
+struct TypeInfo : public Clusters::Globals::Attributes::GeneratedCommandList::TypeInfo
+{
+    static constexpr ClusterId GetClusterId() { return Clusters::AppleDeviceInformation::Id; }
+};
+} // namespace GeneratedCommandList
+namespace AcceptedCommandList {
+struct TypeInfo : public Clusters::Globals::Attributes::AcceptedCommandList::TypeInfo
+{
+    static constexpr ClusterId GetClusterId() { return Clusters::AppleDeviceInformation::Id; }
+};
+} // namespace AcceptedCommandList
+namespace EventList {
+struct TypeInfo : public Clusters::Globals::Attributes::EventList::TypeInfo
+{
+    static constexpr ClusterId GetClusterId() { return Clusters::AppleDeviceInformation::Id; }
+};
+} // namespace EventList
+namespace AttributeList {
+struct TypeInfo : public Clusters::Globals::Attributes::AttributeList::TypeInfo
+{
+    static constexpr ClusterId GetClusterId() { return Clusters::AppleDeviceInformation::Id; }
+};
+} // namespace AttributeList
+namespace FeatureMap {
+struct TypeInfo : public Clusters::Globals::Attributes::FeatureMap::TypeInfo
+{
+    static constexpr ClusterId GetClusterId() { return Clusters::AppleDeviceInformation::Id; }
+};
+} // namespace FeatureMap
+namespace ClusterRevision {
+struct TypeInfo : public Clusters::Globals::Attributes::ClusterRevision::TypeInfo
+{
+    static constexpr ClusterId GetClusterId() { return Clusters::AppleDeviceInformation::Id; }
+};
+} // namespace ClusterRevision
+
+struct TypeInfo
+{
+    struct DecodableType
+    {
+        static constexpr ClusterId GetClusterId() { return Clusters::AppleDeviceInformation::Id; }
+
+        CHIP_ERROR Decode(TLV::TLVReader & reader, const ConcreteAttributePath & path);
+
+        Attributes::SupportsWED::TypeInfo::DecodableType supportsWED = static_cast<bool>(0);
+        Attributes::GeneratedCommandList::TypeInfo::DecodableType generatedCommandList;
+        Attributes::AcceptedCommandList::TypeInfo::DecodableType acceptedCommandList;
+        Attributes::EventList::TypeInfo::DecodableType eventList;
+        Attributes::AttributeList::TypeInfo::DecodableType attributeList;
+        Attributes::FeatureMap::TypeInfo::DecodableType featureMap           = static_cast<uint32_t>(0);
+        Attributes::ClusterRevision::TypeInfo::DecodableType clusterRevision = static_cast<uint16_t>(0);
+    };
+};
+} // namespace Attributes
+} // namespace AppleDeviceInformation
 namespace UnitTesting {
 namespace Structs {
 namespace SimpleStruct {

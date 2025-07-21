@@ -388,6 +388,9 @@ static constexpr ClusterId Id = 0x00000750;
 namespace CommissionerControl {
 static constexpr ClusterId Id = 0x00000751;
 } // namespace CommissionerControl
+namespace AppleDeviceInformation {
+static constexpr ClusterId Id = 0x1349FC00;
+} // namespace AppleDeviceInformation
 namespace UnitTesting {
 static constexpr ClusterId Id = 0xFFF1FC05;
 } // namespace UnitTesting

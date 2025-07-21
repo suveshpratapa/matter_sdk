@@ -5470,6 +5470,8 @@ enum class SupportedDeviceCategoryBitmap : uint32_t
 };
 } // namespace CommissionerControl
 
+namespace AppleDeviceInformation {} // namespace AppleDeviceInformation
+
 namespace UnitTesting {
 
 // Enum for SimpleEnum
