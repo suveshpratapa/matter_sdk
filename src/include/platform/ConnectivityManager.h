@@ -200,6 +200,11 @@ public:
     void SetWiFiAPIdleTimeout(System::Clock::Timeout val);
     CHIP_ERROR DisconnectNetwork();
 
+#if CHIP_DEVICE_CONFIG_THREAD_WED
+    bool IsEnhCslPeerLinked();
+    bool IsEnhCslPeerLinking();
+    bool IsWakeupListenEnabled();
+#endif
     // Thread Methods
     bool IsThreadEnabled();
     ThreadDeviceType GetThreadDeviceType();
@@ -453,6 +458,23 @@ inline CHIP_ERROR ConnectivityManager::WiFiPAFCancelConnect()
 inline CHIP_ERROR ConnectivityManager::WiFiPAFSend(chip::System::PacketBufferHandle && msgBuf)
 {
     return static_cast<ImplClass *>(this)->_WiFiPAFSend(std::move(msgBuf));
+}
+#endif
+
+#if CHIP_DEVICE_CONFIG_THREAD_WED
+inline bool ConnectivityManager::IsEnhCslPeerLinked(void)
+{
+    return static_cast<ImplClass *>(this)->_IsEnhCslPeerLinked();
+}
+
+inline bool ConnectivityManager::IsEnhCslPeerLinking(void)
+{
+    return static_cast<ImplClass *>(this)->_IsEnhCslPeerLinking();
+}
+
+inline bool ConnectivityManager::IsWakeupListenEnabled(void)
+{
+    return static_cast<ImplClass *>(this)->_IsWakeupListenEnabled();
 }
 #endif
 
