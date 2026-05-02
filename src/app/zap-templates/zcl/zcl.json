@@ -3,10 +3,11 @@
     "category": "matter",
     "version": 1,
     "requiredFeatureLevel": 102,
-    "xmlRoot": [".", "./data-model/chip"],
+    "xmlRoot": [".", "./data-model/chip", "./data-model/apple/"],
     "_comment": "Ensure access-control-definitions.xml is first in xmlFile array",
     "xmlFile": [
         "access-control-definitions.xml",
+        "apple-device-information-cluster.xml",
         "chip-types.xml",
         "access-control-cluster.xml",
         "account-login-cluster.xml",

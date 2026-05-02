@@ -1352,6 +1352,15 @@ static BOOL CommandNeedsTimedInvokeInCommodityMeteringCluster(AttributeId aAttri
     }
     }
 }
+static BOOL CommandNeedsTimedInvokeInAppleDeviceInformationCluster(AttributeId aAttributeId)
+{
+    using namespace Clusters::AppleDeviceInformation;
+    switch (aAttributeId) {
+    default: {
+        return NO;
+    }
+    }
+}
 static BOOL CommandNeedsTimedInvokeInUnitTestingCluster(AttributeId aAttributeId)
 {
     using namespace Clusters::UnitTesting;
@@ -1790,6 +1799,9 @@ BOOL MTRCommandNeedsTimedInvoke(NSNumber * _Nonnull aClusterID, NSNumber * _Nonn
     }
     case Clusters::CommodityMetering::Id: {
         return CommandNeedsTimedInvokeInCommodityMeteringCluster(commandID);
+    }
+    case Clusters::AppleDeviceInformation::Id: {
+        return CommandNeedsTimedInvokeInAppleDeviceInformationCluster(commandID);
     }
     case Clusters::UnitTesting::Id: {
         return CommandNeedsTimedInvokeInUnitTestingCluster(commandID);
