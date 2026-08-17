@@ -19,7 +19,9 @@ import argparse
 import configparser
 import logging
 import os
+import shutil
 import subprocess
+import sys
 from collections import namedtuple
 from pathlib import Path
 
@@ -70,6 +72,13 @@ ALL_PLATFORMS = {
 }
 
 Module = namedtuple('Module', 'name path platforms recursive')
+
+# SiSDK's committed .lfsconfig points at Artifactory, but this fork stores LFS
+# objects on GitHub. Git LFS reads .lfsconfig from the current working tree, so
+# a branch switch (or a first checkout of a commit that still has the Artifactory
+# URL) 404s. Override only this submodule: skip smudge during checkout, then
+# pull from the GitHub LFS endpoint derived from origin.
+SIMPLICITY_SDK_PATH = 'third_party/silabs/simplicity_sdk'
 
 
 def load_module_info() -> None:
@@ -124,19 +133,83 @@ def make_chip_root_safe_directory() -> None:
             ['git', 'config', '--global', '--add', 'safe.directory', CHIP_ROOT])
 
 
-def checkout_modules(modules: list, shallow: bool, force: bool, recursive: bool, jobs: int) -> None:
-    names = ', '.join([module.name for module in modules])
-    log.info("Checking out '%s'", names)
+def require_git_lfs() -> None:
+    git_lfs = shutil.which('git-lfs')
+    probe = subprocess.run(['git', 'lfs', 'version'], capture_output=True, text=True)
+    if git_lfs and probe.returncode == 0:
+        log.info("Using %s (%s)", git_lfs, probe.stdout.strip() or probe.stderr.strip())
+        return
+    sys.exit(
+        "git-lfs is required to check out third_party/silabs/simplicity_sdk.\n"
+        "Install it, then re-run this script:\n"
+        "  macOS:          brew install git-lfs && git lfs install\n"
+        "  Debian/Ubuntu:  sudo apt-get install git-lfs && git lfs install\n"
+        "  See https://git-lfs.com")
 
+
+def github_lfs_url(git_url: str):
+    git_url = git_url.strip()
+    owner_repo = None
+    if git_url.startswith('git@github.com:'):
+        owner_repo = git_url[len('git@github.com:'):]
+    elif git_url.startswith('https://github.com/'):
+        owner_repo = git_url[len('https://github.com/'):]
+    elif git_url.startswith('ssh://git@github.com/'):
+        owner_repo = git_url[len('ssh://git@github.com/'):]
+    if not owner_repo:
+        return None
+    owner_repo = owner_repo.strip('/')
+    if owner_repo.endswith('.git'):
+        owner_repo = owner_repo[:-4]
+    return f'https://github.com/{owner_repo}.git/info/lfs'
+
+
+def pull_simplicity_sdk_lfs(module_path: str) -> None:
+    repo = os.path.join(CHIP_ROOT, module_path)
+    origin = subprocess.check_output(
+        ['git', '-C', repo, 'config', '--get', 'remote.origin.url'], text=True).strip()
+    lfs_url = github_lfs_url(origin)
+    if not lfs_url:
+        log.info("%s origin %s is not GitHub; leaving LFS URL unchanged", module_path, origin)
+        return
+    log.info("Fetching %s LFS objects from %s", module_path, lfs_url)
+    subprocess.check_call(['git', '-C', repo, 'lfs', 'install', '--local'])
+    subprocess.check_call(['git', '-C', repo, 'config', 'lfs.url', lfs_url])
+    subprocess.check_call(['git', '-C', repo, 'lfs', 'pull'])
+
+
+def _submodule_update_cmd(shallow: bool, force: bool, recursive: bool, jobs: int) -> list:
     cmd = ['git', '-c', 'core.symlinks=true', '-C', CHIP_ROOT]
     cmd += ['submodule', '--quiet', 'update', '--init']
     cmd += ['--depth', '1'] if shallow else []
     cmd += ['--force'] if force else []
     cmd += ['--recursive'] if recursive else []
     cmd += ['--jobs', f'{jobs}'] if jobs else []
-    module_paths = [module.path for module in modules]
+    return cmd
 
-    subprocess.check_call(cmd + module_paths)
+
+def checkout_modules(modules: list, shallow: bool, force: bool, recursive: bool, jobs: int) -> None:
+    names = ', '.join([module.name for module in modules])
+    log.info("Checking out '%s'", names)
+
+    cmd = _submodule_update_cmd(shallow, force, recursive, jobs)
+    sdk_modules = [m for m in modules if m.path == SIMPLICITY_SDK_PATH]
+    other_modules = [m for m in modules if m.path != SIMPLICITY_SDK_PATH]
+    other_paths = [m.path for m in other_modules]
+
+    if sdk_modules:
+        require_git_lfs()
+
+    if other_paths:
+        subprocess.check_call(cmd + other_paths)
+
+    if sdk_modules:
+        sdk_paths = [m.path for m in sdk_modules]
+        env = os.environ.copy()
+        env['GIT_LFS_SKIP_SMUDGE'] = '1'
+        subprocess.check_call(cmd + sdk_paths, env=env)
+        for module in sdk_modules:
+            pull_simplicity_sdk_lfs(module.path)
 
     if recursive:
         # We've recursively checkouted all submodules.
